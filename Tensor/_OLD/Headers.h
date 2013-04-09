@@ -1,0 +1,20 @@
+ #pragma once
+
+ #include <QtGui/qwidget.h>
+ #include <QtGui/qapplication.h>
+ #include <QtGui/qevent.h>
+ #include <QtCore/qtimer.h>
+ #include <QtGui/qlabel.h>
+ #include <QtGui/qscrollarea.h>
+ #include <QtGui/qgridlayout.h>
+ #include <QtGui/qaction.h>
+ #include <QtGui/qslider.h>
+ #include <QtGui/qmessagebox.h> 
+ #include <QtGui/qmenu.h>
+ #include <QtGui/qlineedit.h>
+ #include <QtGui/qmenubar.h>
+ #include <QtGui/qinputdialog.h>
+ #include <QtGui/qfiledialog.h>
+ #include <QtGui/qmessagebox.h>
+ #include <QtGui/qsplitter.h>
+ #include <QtCore/qlist.h>
