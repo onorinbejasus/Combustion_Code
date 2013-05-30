@@ -24,3 +24,5 @@ QuadricCode/Transform.xcodeproj/project.xcworkspace/xcuserdata/timothyluciani.xc
 *.plist
 
 *.xcbkptlist
+
+*.o
