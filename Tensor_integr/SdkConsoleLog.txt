@@ -1,0 +1,8 @@
+Read '../../data/AbedToTim/2/divergence.raw', 14527496 bytes
+./main Starting...
+
+Press '+' and '-' to change density (0.01 increments)
+      ']' and '[' to change brightness
+      ';' and ''' to modify transfer function offset
+      '.' and ',' to modify transfer function scale
+
