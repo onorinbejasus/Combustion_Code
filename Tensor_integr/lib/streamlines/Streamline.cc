@@ -1,7 +1,7 @@
 #include"Streamline.hh"
 
-extern GLuint createVBO(GLfloat *points, int size);
-extern GLuint compileShader(const char *vsource, const char *fsource, const char *gsource);
+extern GLuint createVBO(GLfloat *points, int size, GLuint shader);
+extern GLuint compileShader(const char *vsource, const char *fsource);
 extern void deleteVBO(GLuint vbo);
 extern void draw_streamlines(GLuint vbo, GLuint shader, int size, GLfloat color[3]);
 extern char *textFileRead(char *fn) ;
@@ -238,8 +238,7 @@ bool Streamline::RK4Method(Vector CurrPos, Vector& NextPos, float fStepSize){
 	return true;
 }
 void Streamline::CreateStreamlines(){		
-	char *g = textFileRead("/Users/amaries/Desktop/Combustion_Code/Tensor/lib/draw/geometry.geom");
-	shader = compileShader(vertexShader, linePixelShader, g);
+	this->shader = compileShader(vertexShader, linePixelShader);
 
 	Vector CurrPos, NextPos ;
 
@@ -287,7 +286,7 @@ void Streamline::CreateStreamlines(){
 				glEndList() ;
 				
 				// create the vbo				
-				vbo[index] = createVBO(&points[0], points.size());
+				vbo[index] = createVBO(&points[0], points.size(), shader);
 				sizes[index++] = points.size();
 
 				points.clear();
@@ -313,7 +312,7 @@ void Streamline::RenderStreamlines(GLfloat *eigenfloats){
 				temp = 4;//i % 4;
 			else
 				temp = 4;
-			draw_streamlines(vbo[i], shader, sizes[i] * 4.0 * sizeof(GLfloat), streamlineColor[temp]);
+			draw_streamlines(vbo[i], this->shader, sizes[i] * 4.0 * sizeof(GLfloat), streamlineColor[temp]);
 		}
 	}
 } 

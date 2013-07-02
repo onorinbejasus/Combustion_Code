@@ -3,6 +3,8 @@
 #include <iostream>
 #include <cmath>
 
+GLuint mycolor;
+
 char *textFileRead(char *fn) 
 	{
 		FILE *fp;
@@ -38,7 +40,7 @@ char *textFileRead(char *fn)
 					Create VBO
 ----------------------------------------------------------*/
 
-GLuint createVBO(GLfloat *points, int size)
+GLuint createVBO(GLfloat *points, int size, GLuint shader)
 {
 	GLuint vbo = 0;
 	
@@ -51,7 +53,7 @@ GLuint createVBO(GLfloat *points, int size)
 
     glBufferData( GL_ARRAY_BUFFER, m_size, 0, GL_STATIC_DRAW);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, m_size, points);
-	
+		
 	return vbo;
 }
 
@@ -78,7 +80,6 @@ void draw_streamlines (GLuint vbo, GLuint shader, int size, GLfloat color[3])
     glEnable(GL_DEPTH_TEST);
     glUseProgram(shader);
 
-	GLuint mycolor = glGetUniformLocation(shader, "color");
 	glUniform4f(mycolor,color[0], color[1], color[2], 1.0);
 
 	glClearColor(0.0, 0.0, 0.0, 0.0);
@@ -97,23 +98,29 @@ void draw_streamlines (GLuint vbo, GLuint shader, int size, GLfloat color[3])
     glDisable(GL_POINT_SPRITE_ARB);
 }
 
+void draw_volume(GLuint shader, GLuint tex, GLuint pos){
+		
+	glUseProgram(shader);
+	
+}
+
 // =============================
 // = Compile Shader Program(s) =
 // =============================
 
-GLuint compileShader(const char *vsource, const char *fsource, const char* gsource){
+GLuint compileShader(const char *vsource, const char *fsource){
 	
 	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
     GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    GLuint geometryShader = glCreateShader(GL_GEOMETRY_SHADER_EXT);
+//    GLuint geometryShader = glCreateShader(GL_GEOMETRY_SHADER_EXT);
 
     glShaderSource(vertexShader, 1, &vsource, 0);
     glShaderSource(fragmentShader, 1, &fsource, 0);
-    glShaderSource(geometryShader, 1, &gsource, 0);
+//    glShaderSource(geometryShader, 1, &gsource, 0);
     
     glCompileShader(vertexShader);
     glCompileShader(fragmentShader);
-    glCompileShader(geometryShader);
+//    glCompileShader(geometryShader);
 
     GLuint program = glCreateProgram();
 
@@ -141,6 +148,8 @@ GLuint compileShader(const char *vsource, const char *fsource, const char* gsour
         glDeleteProgram(program);
         program = 0;
     }
-
+	
+	mycolor = glGetUniformLocation(program, "color");
+	
     return program;	
 }

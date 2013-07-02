@@ -1,4 +1,4 @@
-Read '../../data/AbedToTim/2/divergence.raw', 14527496 bytes
+Read '/Users/amaries/Desktop/Combustion_Code/data/AbedToTim/2/divergence.raw', 14527496 bytes
 ./main Starting...
 
 Press '+' and '-' to change density (0.01 increments)

@@ -26,39 +26,23 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>7</integer>
+				<integer>2</integer>
 				<key>line</key>
-				<integer>906</integer>
+				<integer>988</integer>
 			</dict>
-			<key>columnSelection</key>
-			<false/>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>13</integer>
-			<key>selectFrom</key>
-			<dict>
-				<key>column</key>
-				<integer>1</integer>
-				<key>line</key>
-				<integer>906</integer>
-			</dict>
-			<key>selectTo</key>
-			<dict>
-				<key>column</key>
-				<integer>7</integer>
-				<key>line</key>
-				<integer>906</integer>
-			</dict>
+			<integer>958</integer>
 		</dict>
 		<key>callbacks.hh</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>2</integer>
+				<integer>40</integer>
 				<key>line</key>
-				<integer>32</integer>
+				<integer>35</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
@@ -84,9 +68,9 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>74</integer>
+				<integer>2</integer>
 				<key>line</key>
-				<integer>30</integer>
+				<integer>74</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
@@ -100,7 +84,7 @@
 				<key>column</key>
 				<integer>0</integer>
 				<key>line</key>
-				<integer>21</integer>
+				<integer>20</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
@@ -126,9 +110,9 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>23</integer>
+				<integer>18</integer>
 				<key>line</key>
-				<integer>11</integer>
+				<integer>12</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
@@ -140,14 +124,14 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>24</integer>
+				<integer>3</integer>
 				<key>line</key>
-				<integer>0</integer>
+				<integer>86</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>0</integer>
+			<integer>107</integer>
 		</dict>
 		<key>lib/file_ops/Parameters.cc</key>
 		<dict>
@@ -296,7 +280,7 @@
 				<key>column</key>
 				<integer>0</integer>
 				<key>line</key>
-				<integer>0</integer>
+				<integer>1</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
@@ -438,9 +422,9 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>1</integer>
+				<integer>60</integer>
 				<key>line</key>
-				<integer>372</integer>
+				<integer>288</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
@@ -452,14 +436,30 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>22</integer>
+				<integer>24</integer>
 				<key>line</key>
-				<integer>78</integer>
+				<integer>60</integer>
 			</dict>
+			<key>columnSelection</key>
+			<false/>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>0</integer>
+			<integer>36</integer>
+			<key>selectFrom</key>
+			<dict>
+				<key>column</key>
+				<integer>0</integer>
+				<key>line</key>
+				<integer>60</integer>
+			</dict>
+			<key>selectTo</key>
+			<dict>
+				<key>column</key>
+				<integer>0</integer>
+				<key>line</key>
+				<integer>61</integer>
+			</dict>
 		</dict>
 		<key>lib/transform/Transform.cc</key>
 		<dict>
@@ -606,53 +606,37 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>48</integer>
+				<integer>17</integer>
 				<key>line</key>
-				<integer>30</integer>
+				<integer>337</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>0</integer>
+			<integer>135</integer>
 		</dict>
 		<key>lib/volRender/volumeRender_kernel.cuh</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>0</integer>
+				<integer>1</integer>
 				<key>line</key>
-				<integer>19</integer>
+				<integer>9</integer>
 			</dict>
-			<key>columnSelection</key>
-			<false/>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
 			<integer>0</integer>
-			<key>selectFrom</key>
-			<dict>
-				<key>column</key>
-				<integer>0</integer>
-				<key>line</key>
-				<integer>13</integer>
-			</dict>
-			<key>selectTo</key>
-			<dict>
-				<key>column</key>
-				<integer>0</integer>
-				<key>line</key>
-				<integer>19</integer>
-			</dict>
 		</dict>
 		<key>main.cc</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>18</integer>
+				<integer>30</integer>
 				<key>line</key>
-				<integer>35</integer>
+				<integer>34</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
@@ -734,44 +718,14 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>11</integer>
+				<integer>1</integer>
 				<key>line</key>
-				<integer>177</integer>
+				<integer>211</integer>
 			</dict>
-			<key>columnSelection</key>
-			<false/>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
 			<integer>167</integer>
-			<key>selectFrom</key>
-			<dict>
-				<key>column</key>
-				<integer>5</integer>
-				<key>line</key>
-				<integer>177</integer>
-			</dict>
-			<key>selectTo</key>
-			<dict>
-				<key>column</key>
-				<integer>11</integer>
-				<key>line</key>
-				<integer>177</integer>
-			</dict>
-		</dict>
-		<key>window.d</key>
-		<dict>
-			<key>caret</key>
-			<dict>
-				<key>column</key>
-				<integer>0</integer>
-				<key>line</key>
-				<integer>0</integer>
-			</dict>
-			<key>firstVisibleColumn</key>
-			<integer>0</integer>
-			<key>firstVisibleLine</key>
-			<integer>0</integer>
 		</dict>
 		<key>window.hh</key>
 		<dict>
@@ -829,7 +783,7 @@
 		<string>lib/draw/vbo.cc</string>
 		<string>lib/open_gl.hh</string>
 		<string>callbacks.cc</string>
-		<string>window.d</string>
+		<string>lib/volRender/reductionMax.cu</string>
 		<string>lib/streamlines/Streamline.cc</string>
 		<string>lib/glyphs/SuperQuadrics.cc</string>
 		<string>lib/glyphs/Arrows.cc</string>
@@ -842,6 +796,6 @@
 	<key>showFileHierarchyDrawer</key>
 	<true/>
 	<key>windowFrame</key>
-	<string>{{191, 81}, {1090, 921}}</string>
+	<string>{{190, 81}, {1090, 921}}</string>
 </dict>
 </plist>

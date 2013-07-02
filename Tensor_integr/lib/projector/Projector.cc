@@ -1056,9 +1056,8 @@ int Projector::AverageRenderTime(void)
 // Calculates the world-to-projector and projector-to-world transforms from the position and orientation members
 void Projector::CalculateTransformations(void)
 {
-    this->vPrincipalPosition        = new Vector(0.0f,
-                                             0.0f,
-                                             -(this->fSourceToDetector / this->fDetectorPixelSize) ); // since projector projects towards negative z axis
+    this->vPrincipalPosition = new Vector(0.0f, 0.0f, 
+		-(this->fSourceToDetector / this->fDetectorPixelSize) ); // since projector projects towards negative z axis
 
     Transform tScale,tMove,tXrot,tYrot,tZrot;                   // set up the individual transformations
     tScale.Scale(vProjectorScale);

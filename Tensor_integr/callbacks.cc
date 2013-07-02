@@ -37,6 +37,12 @@ extern void render_kernel(dim3 gridSize, dim3 blockSize, uint *d_output, /*uint 
 						void *h_volume, /*void *cluster, */cudaExtent volumeSize, cudaArray *d_volumeArray, /*cudaArray *d_volumeArray_cluster, */int *set);
 
 
+extern GLuint compileShader(const char *vsource, const char *fsource);
+extern void draw_volume(GLuint shader, GLuint tex, GLuint pos);
+
+GLuint volumeShader = 0;
+GLuint volTexture = 0;
+
 // Define the files that are to be save and the reference images for validation
 const char *sOriginal[] =
 {
@@ -81,6 +87,8 @@ struct cudaGraphicsResource *cuda_pbo_resource; // CUDA Graphics Resource (to tr
 
 unsigned int timer = 0;
 
+bool r_flag = false;
+
 // Auto-Verification Code
 const int frameCheckNumber = 2;
 int fpsCount = 0;        // FPS count for averaging
@@ -95,6 +103,8 @@ bool g_bFBODisplay = false;
 
 int mode = 0;
 bool method = false;
+
+bool volumeVisible = false;
 
 float4 transfer[]  = {
 			 make_float4(0.0f,0.0f,0.0f,0.0f),
@@ -128,14 +138,13 @@ float4 *d_iColors;
 int ox, oy;
 int buttonState = 0;
 
+extern GLuint shader;
+
 int set[2];
 //int window1, window2;
 #define MAX(a,b) ((a > b) ? a : b)
 
 void initPixelBuffer();
-
-
-
 
 extern void DrawAxisAndBox(double, double, double);
 extern unsigned int window_width; 
@@ -247,7 +256,7 @@ void keyboard_volume(unsigned char key, int x, int y)
 	
 //	int currWin = glutGetWindow();
 //	glutSetWindow(window1);
-    glutPostRedisplay();
+//  glutPostRedisplay();
 //	glutSetWindow(window2);
 //	glutPostRedisplay();
 //	glutSetWindow(currWin);
@@ -272,13 +281,13 @@ keyboard_volume(key, x, y);
 			printf("Entering SELECT_MODE.\n") ;
 			CurrIM = SelectMode ;
 			break ;
-		/*case '1':														// enable/disable volume rendering
-			if (volRenderer.bVisible) 
-				volRenderer.bVisible = false ;
+		case '1':														// enable/disable volume rendering
+			if (volumeVisible) 
+				volumeVisible = false ;
 			else
-				volRenderer.bVisible = true ;
+				volumeVisible = true ;
 			glutPostRedisplay() ;			
-			break ;*/
+			break ;
 		case '2':													// enable/disable vector field view			
 			if( vectorField.bVisible )
 				vectorField.bVisible = false ;
@@ -499,8 +508,8 @@ void reshape(int w, int h) {
 	printf("top = %f\n", top); fflush(stdout);
 	printf("near = %f\n", near); fflush(stdout);
 	printf("far = %f\n", far); fflush(stdout);
-glFrustum(-1, 1, -1, 1, -1, 1);
-//glFrustum(left, right, bottom, top, near, far);
+//glFrustum(-1, 1, -1, 1, -1, 1);
+glFrustum(left, right, bottom, top, near, far);
 	/*glFrustum (-1.0 * w/2 * fProjectionPlanePixelSize,
 				1.0	* w/2 * fProjectionPlanePixelSize,
 				-1.0 * h/2 * fProjectionPlanePixelSize,
@@ -840,41 +849,49 @@ void mouseMotion(int x, int y){
 	glutPostRedisplay();	
 }
 
-void display()
+void draw_volume()
 {
     // display results
-    glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    // draw image from PBO
-    glDisable(GL_DEPTH_TEST);
-
+//    glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+//	gluLookAt(0.0, 0.0, -10, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+	
+	glDisable(GL_DEPTH_TEST);
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+	gluOrtho2D(-1.0, 1.0, -1.0, 1.0); 
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+	
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-
-	//gluLookAt(0.0, 0.0, -500, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
-
-
     // draw using texture
+	// going into 2D render mode (maybe replace with shader later?)
+ 	glEnable(GL_TEXTURE_2D);
+	//glUseProgram(volumeShader);
+    
+// copy from pbo to texture
 
-    // copy from pbo to texture
     glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, pbo);
     glBindTexture(GL_TEXTURE_2D, tex);
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, window_width, window_height, GL_RGBA, GL_UNSIGNED_BYTE, 0);
     glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
-
-    // draw textured quad
-
- 	glEnable(GL_TEXTURE_2D);
-    glBegin(GL_QUADS);
-    glTexCoord2f(0, 0); glVertex3f(-1, -1, 0);
-    glTexCoord2f(1, 0); glVertex3f(1, -1, 0);
-    glTexCoord2f(1, 1); glVertex3f(1, 1, 0);
-    glTexCoord2f(0, 1); glVertex3f(-1, 1, 0);
-    glEnd();
 	
+//	draw_volume(volumeShader, tex, volTexture);
+	
+    // draw textured quad
+	// texture to 4 window coordinates (between -1 and 1)
+     glBegin(GL_QUADS);
+         glTexCoord2f(0.0f, 0.0f); glVertex2f(-1.0f, -1.0f);
+         glTexCoord2f(1.0f, 0.0f); glVertex2f(1.0f, -1.0f);
+         glTexCoord2f(1.0f, 1.0f); glVertex2f(1.0f, 1.0f);
+         glTexCoord2f(0.0f, 1.0f); glVertex2f(-1.0f, 1.0f);
+     glEnd();
+	
+	// binding null (clearing the texture buffer)
     glBindTexture(GL_TEXTURE_2D, 0);
-    glDisable(GL_TEXTURE_2D);
-
+    
     if (g_CheckRender && g_CheckRender->IsQAReadback() && g_Verify) {
         // readback for QA testing
         shrLog("\n> (Frame %d) Readback BackBuffer\n", frameCount);
@@ -885,9 +902,21 @@ void display()
         }
         g_Verify = false;
     }
-    glutSwapBuffers();
-    glutReportErrors();
 
+	//glutSwapBuffers() ;
+	glutReportErrors();
+	
+ 	glDisable(GL_TEXTURE_2D);
+
+	// put back to normal
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+	glMatrixMode(GL_MODELVIEW);
+	glPopMatrix();
+	glEnable(GL_DEPTH_TEST);
+	
+	printf("end render cuda\n");
+	fflush(stdout);
 }
 
 // ====================
@@ -895,23 +924,25 @@ void display()
 // ====================
 
 /// The display callback.
-void display_old()
+void display()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glPushMatrix();
 	glMatrixMode(GL_MODELVIEW) ;
 	glLoadIdentity ();             /* clear the matrix */
-           
+
+	if(volumeVisible)
+		draw_volume();
+
 /* viewing transformation  */
 	//projector.printProjector();
 	printf("projector.vSourceLocation.VectorZ = %f\n", projector.vSourceLocation.VectorZ); fflush(stdout);
 	gluLookAt(0.0, 0.0, projector.vSourceLocation.VectorZ, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 	
 	//volRenderer.RenderVolImage() ;			// render the volume image 
-//display_volume();
+	//draw_volume();
 	glClear(GL_DEPTH_BUFFER_BIT) ;			// so that this volume image does not block other objects
 											// Since we have enabled depth test	
-		
 	glRotatef(anglex,1.0,0.0,0.0) ;
 	glRotatef(angley,0.0,1.0,0.0) ;
 	glRotatef(anglez,0.0,0.0,1.0) ;
@@ -926,7 +957,6 @@ void display_old()
 	float tz = (slices)*boxLenZ/2 ;
 	float ty = (rows)*boxLenY/2 ;
 	float tx = (cols)*boxLenX/2 ;		
-
 	
 	printf("boxLenX = %f\n", boxLenX); fflush(stdout);
 	printf("boxLenY = %f\n", boxLenY); fflush(stdout);
@@ -935,9 +965,8 @@ void display_old()
 	printf("ty = %f\n", ty); fflush(stdout);
 	printf("tz = %f\n", tz); fflush(stdout);
 
-
 	glTranslatef(-tx, -ty, -tz) ;
-
+	
 	streamlines.RenderStreamlines(eigenfloats) ;		// display streamlines
 	
 	if(vectorField.bVisible){
@@ -958,14 +987,17 @@ void display_old()
 	else
 		glutSetCursor(GLUT_CURSOR_TOP_LEFT_CORNER);
 
+//	if(volumeVisible)
+//		draw_volume();
+	
 	glPopMatrix();
-
+	
 	glutSwapBuffers() ;
 }
 
 // render image using CUDA
 void render()
-{
+{		
 	copyInvViewMatrix(invViewMatrix, sizeof(float4)*3);
 
     // map PBO to get CUDA device pointer
@@ -994,10 +1026,11 @@ void render()
 
 	cutilSafeCall(cudaGraphicsUnmapResources(1, &cuda_pbo_resource, 0));
 //    cutilSafeCall(cudaGraphicsUnmapResources(1, &cluster_pbo_resource, 0));
+
 }
 
 void idle()
-{	
+{		
 		// use OpenGL to build view matrix
     GLfloat modelView[16];
     glMatrixMode(GL_MODELVIEW);
@@ -1017,9 +1050,9 @@ void idle()
  
 //	int currWin = glutGetWindow();
 //	glutSetWindow(window1);
-    glutPostRedisplay();
+//    glutPostRedisplay();
 //	glutSetWindow(window2);
-//	glutPostRedisplay();
+	glutPostRedisplay();
 //	glutSetWindow(currWin);	
 }
 
@@ -1032,7 +1065,6 @@ void AutoQATest()
 	shrQAFinishExit2(false, *pArgc, (const char **)pArgv, QA_PASSED);
     }
 }
-
 void computeFPS()
 {
     frameCount++;
@@ -1220,7 +1252,11 @@ void initCuda(void *h_volume, cudaExtent volumeSize, float4 transfer[6], uint im
 }*/
 
 void InitVolRender(int argc, char ** argv)
-{
+{	
+	
+	volumeShader = compileShader(vertexShader, linePixelShader);
+	volTexture = glGetUniformLocation(volumeShader, "volume");
+	
 	printf("start InitVolRender\n"); fflush(stdout);
     	pArgc = &argc;
     	pArgv = argv;
