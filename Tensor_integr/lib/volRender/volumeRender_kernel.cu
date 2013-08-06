@@ -146,8 +146,9 @@ float4 color_interpolate_large(float sample, float4 one, float4 two, float4 thre
 	
 	return retcolor;	
 }
+
 __device__ 
-float4 color_interpolate(float sample, float4 one, float4 two, float4 three,
+float4 color_interpolate_1(float sample, float4 one, float4 two, float4 three,
 				float4 four, float4 five, float4 six){
 	
 	float4 retcolor = make_float4(0);
@@ -155,30 +156,119 @@ float4 color_interpolate(float sample, float4 one, float4 two, float4 three,
 		
 	if(sample <= 25500.0f){
 	
-		percent = (25500.0f - sample) / 25500.0f;
+		percent = (sample - 0.0f) / (25500.0f - 0.0f);
+		retcolor = one + percent * (two - one);
+		
+	}else if(sample > 25500.0f && sample <= 26500.0f){
+		
+		percent = (sample - 25500.0f)  / (26500.0f - 25500.0f);
+		retcolor = two + percent * (three - two);
+		
+	}else if(sample > 26500.0f && sample <= 27500.0f){
+		
+		percent = (sample - 26500.0f) / (27500.0f - 26500.0f);
+		retcolor = three + percent * (four - three);
+		
+	}else if(sample > 27500.0f && sample <= 28500.0f){
+		
+		percent = (sample - 27500.0f) / (28500.0f - 27500.0f);
+		retcolor = four + percent * (five - four);
+		
+	}else{
+		
+		percent = (sample - 28500.0f) / (65535.0f - 28500.0f);
+		retcolor = five + percent * (six - five);
+	}
+	
+	return retcolor;	
+}
+
+__device__ 
+float4 color_interpolate_old(float sample, float4 one, float4 two, float4 three,
+				float4 four, float4 five, float4 six){
+	
+	float4 retcolor = make_float4(0);
+	float percent = 0.0f; 
+		
+	if(sample <= 25500.0f){
+	
+		percent = (25500.0f - sample) / (25500.0f - 0.0f);
 		retcolor = (percent)*one + (1.0f-percent) * two;
 		
 	}else if(sample > 25500.0f && sample <= 26500.0f){
 		
-		percent = (26500.0f - sample)  / 1000.0f;
+		percent = (26500.0f - sample)  / (26500.0f - 25500.0f);
 		retcolor = (percent)*two + (1.0f-percent) * three;
 		
 	}else if(sample > 26500.0f && sample <= 27500.0f){
 		
-		percent = (27500.0f - sample) / 1000.0f;
+		percent = (27500.0f - sample) / (27500.0f - 26500.0f);
 		retcolor = (percent)*three + (1.0f-percent) * four;
 		
 	}else if(sample > 27500.0f && sample <= 28500.0f){
 		
-		percent = (28500.0f - sample) / 1000.0f;
+		percent = (28500.0f - sample) / (28500.0f - 27500.0f);
 		retcolor = (percent)*four + (1.0f-percent) * five;
 		
 	}else{
 		
-		percent = (65535.0f - sample) / 65535.0f;
+		percent = (65535.0f - sample) / (65535.0f - 28500.0f);
 		retcolor = (percent)*five + (1.0f-percent) * six;
 	}
 	
+	return retcolor;	
+}
+
+__device__ 
+float4 color_interpolate(float sample, float4 one, float4 two, float4 three,
+				float4 four, float4 five, float4 six, uint tfsize){
+
+	/*int index = 0;
+	for(index = 0; index < tfsize; index++)
+		if (sample < tf[index][0])
+			break;
+	float4 low_val = make_float4(tf[index-1][1], tf[index-1][2], tf[index-1][3], 0.1f);
+	float4 high_val = make_float4(tf[index][1], tf[index][2], tf[index][3], 0.1f);
+	float percent = (tf[index][0] - sample) / (tf[index][0] - tf[index-1][0]);
+	float4 retcolor = high_val - percent * (high_val - low_val);*/
+	//float percent = (sample - tf[index-1][0]) / (tf[index][0] - tf[index-1][0]);
+	//float4 retcolor = low_val - percent * (high_val - low_val);
+
+	float4 retcolor = make_float4(0);
+	float percent = 0.0f; 
+
+	float one_lim = one.x; one = make_float4(one.y, one.z, one.w, 0.1f);
+	float two_lim = two.x; two = make_float4(two.y, two.z, two.w, 0.1f);
+	float three_lim = three.x; three = make_float4(three.y, three.z, three.w, 0.1f);
+	float four_lim = four.x; four = make_float4(four.y, four.z, four.w, 0.1f);
+	float five_lim = five.x; five = make_float4(five.y, five.z, five.w, 0.1f);
+	float six_lim = six.x; six = make_float4(six.y, six.z, six.w, 0.1f);
+
+	if(sample <= two_lim){
+	
+		percent = (two_lim - sample) / (two_lim - one_lim);
+		retcolor = (percent)*one + (1.0f-percent) * two;
+		
+	}else if(sample > two_lim && sample <= three_lim){
+		
+		percent = (three_lim - sample)  / (three_lim - two_lim);
+		retcolor = (percent)*two + (1.0f-percent) * three;
+		
+	}else if(sample > three_lim && sample <= four_lim){
+		
+		percent = (four_lim - sample) / (four_lim - three_lim);
+		retcolor = (percent)*three + (1.0f-percent) * four;
+		
+	}else if(sample > four_lim && sample <= five_lim){
+		
+		percent = (five_lim - sample) / (five_lim - four_lim);
+		retcolor = (percent)*four + (1.0f-percent) * five;
+		
+	}else{
+		
+		percent = (six_lim - sample) / (six_lim - five_lim);
+		retcolor = (percent)*five + (1.0f-percent) * six;
+	}	
 	return retcolor;	
 }
 
@@ -196,7 +286,7 @@ __global__ void
 d_render(float4 *d_iColors, ushort *data,
  						float *d_iRed, float *d_iGreen, float *d_iBlue, uint imageW, uint imageH,
      					float density, float brightness, float4 one, float4 two, float4 three, 
-						float4 four, float4 five, float4 six/*, int type*/)
+						float4 four, float4 five, float4 six, uint tfsize/*, int type*/)
 {
     const int maxSteps = 500;
     const float tstep = 0.01f;
@@ -237,11 +327,12 @@ d_render(float4 *d_iColors, ushort *data,
 			sample = tex3D(tex, pos.x*0.5f+0.5f, pos.y*0.5f+0.5f, pos.z*0.5f+0.5f);
 		//else
 		//	sample = tex3D(tex_cluster, pos.x*0.5f+0.5f, pos.y*0.5f+0.5f, pos.z*0.5f+0.5f);
-			float4 col = make_float4(0.0f);
+				float4 col = make_float4(0.0f);
+				float4 col_ = make_float4(0.0f);
 
         // lookup in transfer function texture
 		//if(type == 0)
-			col = color_interpolate(sample,one,two,three,four,five,six);
+			col = color_interpolate(sample,one,two,three,four,five,six, tfsize);
 		//else
 		//	col = color_interpolate_cluster(sample);
         // pre-multiply alpha
@@ -329,7 +420,7 @@ void setup_volume(void *h_volume, cudaExtent volumeSize, uint image_size, cudaAr
 void render_kernel(dim3 gridSize, dim3 blockSize, uint *d_output, /*uint *d_cluster, */float* d_iRed, float* d_oRed, 
 						float* d_iGreen, float* d_oGreen, float* d_iBlue, float* d_oBlue, float4* d_iColors, unsigned short* data, 
 						/*unsigned short *cluster_data, */uint imageW, uint imageH, float density, float brightness, 
-						float4 one, float4 two, float4 three, float4 four, float4 five, float4 six,
+						float4 one, float4 two, float4 three, float4 four, float4 five, float4 six, uint tfsize, 
 						void *h_volume, /*void *cluster, */cudaExtent volumeSize, cudaArray *d_volumeArray, /*cudaArray *d_volumeArray_cluster, */int *set)
 {
 		
@@ -355,7 +446,7 @@ void render_kernel(dim3 gridSize, dim3 blockSize, uint *d_output, /*uint *d_clus
 	cutilSafeCall(cudaMemset(d_oBlue, 0, imageH*imageW*sizeof(float)));
 
 	d_render<<<gridSize, blockSize>>>(d_iColors, data, d_iRed, d_iGreen, d_iBlue, imageW, imageH, density, brightness, 
-						one, two, three, four, five, six/*, 0*/);
+						one, two, three, four, five, six, tfsize/*, 0*/);
 
 	float max_red = reduce_max(d_oRed, d_iRed, size);
 	float max_green = reduce_max(d_oGreen, d_iGreen, size);

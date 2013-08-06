@@ -33,7 +33,7 @@ extern void copyInvViewMatrix(float *invViewMatrix, size_t sizeofMatrix);
 extern void render_kernel(dim3 gridSize, dim3 blockSize, uint *d_output, /*uint *d_cluster, */float* d_iRed, float* d_oRed, 
 						float* d_iGreen, float* d_oGreen, float* d_iBlue, float* d_oBlue, float4* d_iColors, unsigned short* data, 
 						/*unsigned short* cluster_data, */uint imageW, uint imageH, float density, float brightness, 
-						float4 one, float4 two, float4 three, float4 four, float4 five, float4 six,
+						float4 one, float4 two, float4 three, float4 four, float4 five, float4 six, uint tfsize, 
 						void *h_volume, /*void *cluster, */cudaExtent volumeSize, cudaArray *d_volumeArray, /*cudaArray *d_volumeArray_cluster, */int *set);
 
 
@@ -106,14 +106,19 @@ bool method = false;
 
 bool volumeVisible = false;
 
-float4 transfer[]  = {
-			 make_float4(0.0f,0.0f,0.0f,0.0f),
-			 make_float4(0.0, 0.2, 0.2, 0.1),
-			  make_float4(0.5, 0.5, 1.0, 0.1),
-			  make_float4(1.0, 1.0, 1.0, 0.1),
-			  make_float4(1.0, 0.2, 0.2, 0.1),
-			  make_float4(1.0, 0.0, 0.0, 0.1), 
-};
+int tfsize;
+const float** tf;
+//float4* tf_host;
+//cudaArray* tf_device;
+float4 transfer[10];
+/*float4 transfer[]  = {
+			make_float4(0.0f,0.0f,0.0f,0.1f),
+			make_float4(0.0, 0.3, 0.3, 0.1),
+			make_float4(0.5, 0.5, 1.0, 0.1),
+			make_float4(1.0, 1.0, 1.0, 0.1),
+			make_float4(1.0, 0.2, 0.2, 0.1),
+			make_float4(1.0, 0.0, 0.0, 0.1), 
+};*/
 
 // CheckFBO/BackBuffer class objects
 CheckRender       *g_CheckRender = NULL;
@@ -502,12 +507,12 @@ void reshape(int w, int h) {
 	float top = 1.0 * h/2 * projector.fDetectorPixelSize;
 	float near = projector.fSourceToDetector;
 	float far = 15000;
-	printf("left = %f\n", left); fflush(stdout);
-	printf("right = %f\n", right); fflush(stdout);
-	printf("bottom = %f\n", bottom); fflush(stdout);
-	printf("top = %f\n", top); fflush(stdout);
-	printf("near = %f\n", near); fflush(stdout);
-	printf("far = %f\n", far); fflush(stdout);
+	//printf("left = %f\n", left); fflush(stdout);
+	//printf("right = %f\n", right); fflush(stdout);
+	//printf("bottom = %f\n", bottom); fflush(stdout);
+	//printf("top = %f\n", top); fflush(stdout);
+	//printf("near = %f\n", near); fflush(stdout);
+	//printf("far = %f\n", far); fflush(stdout);
 //glFrustum(-1, 1, -1, 1, -1, 1);
 glFrustum(left, right, bottom, top, near, far);
 	/*glFrustum (-1.0 * w/2 * fProjectionPlanePixelSize,
@@ -614,7 +619,7 @@ void motion(int x, int y){
 motion_volume(x, y);
 	if( CurrIM == ExploreMode){
 		if(LeftButtonDown == 1 ){				// rotate the volume
-			MouseMoveToRotate(x-buttonDownX, y-buttonDownY) ;
+			MouseMoveToRotate((x-buttonDownX)/2, (y-buttonDownY)/2) ;
 			buttonDownX = x ;
 			buttonDownY = y ;
 		}
@@ -914,9 +919,6 @@ void draw_volume()
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
 	glEnable(GL_DEPTH_TEST);
-	
-	printf("end render cuda\n");
-	fflush(stdout);
 }
 
 // ====================
@@ -936,7 +938,7 @@ void display()
 
 /* viewing transformation  */
 	//projector.printProjector();
-	printf("projector.vSourceLocation.VectorZ = %f\n", projector.vSourceLocation.VectorZ); fflush(stdout);
+	//printf("projector.vSourceLocation.VectorZ = %f\n", projector.vSourceLocation.VectorZ); fflush(stdout);
 	gluLookAt(0.0, 0.0, projector.vSourceLocation.VectorZ, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 	
 	//volRenderer.RenderVolImage() ;			// render the volume image 
@@ -946,11 +948,11 @@ void display()
 	glRotatef(anglex,1.0,0.0,0.0) ;
 	glRotatef(angley,0.0,1.0,0.0) ;
 	glRotatef(anglez,0.0,0.0,1.0) ;
-	
+
 	double boxLenX = Parameters::CtFileVoxelSpacing->VectorX ;
 	double boxLenY = Parameters::CtFileVoxelSpacing->VectorY ;
 	double boxLenZ = Parameters::CtFileVoxelSpacing->VectorZ ;
-	
+
 	DrawAxisAndBox(boxLenX, boxLenY, boxLenZ) ;						// draw axis and bounding box
 
 	// get the volume center in the coordinate center
@@ -958,12 +960,12 @@ void display()
 	float ty = (rows)*boxLenY/2 ;
 	float tx = (cols)*boxLenX/2 ;		
 	
-	printf("boxLenX = %f\n", boxLenX); fflush(stdout);
-	printf("boxLenY = %f\n", boxLenY); fflush(stdout);
-	printf("boxLenZ = %f\n", boxLenZ); fflush(stdout);
-	printf("tx = %f\n", tx); fflush(stdout);
-	printf("ty = %f\n", ty); fflush(stdout);
-	printf("tz = %f\n", tz); fflush(stdout);
+	//printf("boxLenX = %f\n", boxLenX); fflush(stdout);
+	//printf("boxLenY = %f\n", boxLenY); fflush(stdout);
+	//printf("boxLenZ = %f\n", boxLenZ); fflush(stdout);
+	//printf("tx = %f\n", tx); fflush(stdout);
+	//printf("ty = %f\n", ty); fflush(stdout);
+	//printf("tz = %f\n", tz); fflush(stdout);
 
 	glTranslatef(-tx, -ty, -tz) ;
 	
@@ -1016,11 +1018,14 @@ void render()
     // clear image
     cutilSafeCall(cudaMemset(d_output, 0, window_width*window_height*4));
 //	cutilSafeCall(cudaMemset(d_cluster, 0, window_width*window_height*4));
-		
+
     // call CUDA kernel, writing results to PBO
+	printf("tf before render_kernel call:\n");
+	for(int i = 0; i < tfsize; i++)
+		printf("%f, %f, %f, %f\n", tf[i][0], tf[i][1], tf[i][2], tf[i][3]);
     render_kernel(gridSize, blockSize, d_output, /*d_cluster, */d_iRed, d_oRed, d_iGreen, d_oGreen, d_iBlue, d_oBlue,
 			d_iColors, data, /*cluster_data, */window_width, window_height, density, brightness, transfer[0], transfer[1], transfer[2],
-			transfer[3], transfer[4], transfer[5], h_volume, /*cluster, */volumeSize, d_volumeArray, /*d_volumeArray_cluster, */set);
+			transfer[3], transfer[4], transfer[5], tfsize, h_volume, /*cluster, */volumeSize, d_volumeArray, /*d_volumeArray_cluster, */set);
 
     cutilCheckMsg("kernel failed");
 
@@ -1031,7 +1036,7 @@ void render()
 
 void idle()
 {		
-		// use OpenGL to build view matrix
+	// use OpenGL to build view matrix
     GLfloat modelView[16];
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
@@ -1258,153 +1263,168 @@ void InitVolRender(int argc, char ** argv)
 	volTexture = glGetUniformLocation(volumeShader, "volume");
 	
 	printf("start InitVolRender\n"); fflush(stdout);
-    	pArgc = &argc;
-    	pArgv = argv;
 
-	    bool bTestResult = true;
+	tfsize = Parameters::colTranFunc->getSize();
+	tf = Parameters::colTranFunc->getPointList();
+	for(int index = 0; index < tfsize; index++)
+		transfer[index] = make_float4(tf[index][0], tf[index][1], tf[index][2], tf[index][3]);
+	/*tf_host = new float4[tfsize];
+	printf("tff_host (float4):\n");
+	for(int i = 0; i < tfsize; i++)
+	{
+		tf_host[i] = make_float4(tf[i][1], tf[i][2], tf[i][3], 0.1f);
+		printf("%f, %f, %f, %f\n", tf_host[i].x, tf_host[i].y, tf_host[i].z, tf_host[i].w);
+	}
+	cudaChannelFormatDesc channel = cudaCreateChannelDesc<float4>();
+	cudaMallocArray(&tf_device, &channel, tfsize, 1, cudaArrayDefault);
+	cudaMemcpy(tf_device, tf_host, tfsize, cudaMemcpyHostToDevice);*/
 
-	    shrQAStart(argc, argv);
+   	pArgc = &argc;
+   	pArgv = argv;
 
-	    //start logs
-	    shrSetLogFileName ("volumeRender.txt");
-	    shrLog("%s Starting...\n\n", argv[0]); 
+    bool bTestResult = true;
 
-	    if (cutCheckCmdLineFlag(argc, (const char **)argv, "qatest") ||
-	        cutCheckCmdLineFlag(argc, (const char **)argv, "noprompt")) 
-	    {
-	        g_bQAReadback = true;
-	        fpsLimit = frameCheckNumber;
-	    }
+    shrQAStart(argc, argv);
 
-	    if (cutCheckCmdLineFlag(argc, (const char **)argv, "glverify")) 
-	    {
-	        g_bQAGLVerify = true;
-	        fpsLimit = frameCheckNumber;
-	    }
+    //start logs
+    shrSetLogFileName ("volumeRender.txt");
+    shrLog("%s Starting...\n\n", argv[0]); 
 
-	    if (g_bQAReadback) {
-	        // use command-line specified CUDA device, otherwise use device with highest Gflops/s
-	        chooseCudaDevice(argc, argv, false);
-	    } else {
-	        // First initialize OpenGL context, so we can properly set the GL for CUDA.
-	        // This is necessary in order to achieve optimal performance with OpenGL/CUDA interop.
-//	        initGL( &argc, argv );
+    if (cutCheckCmdLineFlag(argc, (const char **)argv, "qatest") ||
+        cutCheckCmdLineFlag(argc, (const char **)argv, "noprompt")) 
+    {
+        g_bQAReadback = true;
+        fpsLimit = frameCheckNumber;
+    }
 
-	        // use command-line specified CUDA device, otherwise use device with highest Gflops/s
-	        chooseCudaDevice(argc, argv, true);
-	    }
+    if (cutCheckCmdLineFlag(argc, (const char **)argv, "glverify")) 
+    {
+        g_bQAGLVerify = true;
+        fpsLimit = frameCheckNumber;
+    }
 
-		initCuda(h_volume, volumeSize, transfer, window_width*window_height);
+    if (g_bQAReadback) {
+        // use command-line specified CUDA device, otherwise use device with highest Gflops/s
+        chooseCudaDevice(argc, argv, false);
+    } else {
+        // First initialize OpenGL context, so we can properly set the GL for CUDA.
+        // This is necessary in order to achieve optimal performance with OpenGL/CUDA interop.
+//      initGL( &argc, argv );
 
-	    cutilCheckError( cutCreateTimer( &timer ) );
+        // use command-line specified CUDA device, otherwise use device with highest Gflops/s
+        chooseCudaDevice(argc, argv, true);
+    }
 
-	    shrLog("Press '+' and '-' to change density (0.01 increments)\n"
-	           "      ']' and '[' to change brightness\n"
-	           "      ';' and ''' to modify transfer function offset\n"
-	           "      '.' and ',' to modify transfer function scale\n\n");
+	initCuda(h_volume, volumeSize, transfer, window_width*window_height);
 
-	    // calculate new grid size
-	    gridSize = dim3(iDivUp(window_width, blockSize.x), iDivUp(window_height, blockSize.y));
+    cutilCheckError( cutCreateTimer( &timer ) );
 
-	    if (g_bQAReadback) {
-	        g_CheckRender = new CheckBackBuffer(window_width, window_height, 4, false);
-	        g_CheckRender->setPixelFormat(GL_RGBA);
-	        g_CheckRender->setExecPath(argv[0]);
-	        g_CheckRender->EnableQAReadback(true);
+    shrLog("Press '+' and '-' to change density (0.01 increments)\n"
+           "      ']' and '[' to change brightness\n"
+           "      ';' and ''' to modify transfer function offset\n"
+           "      '.' and ',' to modify transfer function scale\n\n");
 
-	//		 g_CheckCluster = new CheckBackBuffer(window_width, window_height, 4, false);
-	//	     g_CheckCluster->setPixelFormat(GL_RGBA);
-	//	     g_CheckCluster->setExecPath(argv[0]);
-	//	     g_CheckCluster->EnableQAReadback(true);
+    // calculate new grid size
+    gridSize = dim3(iDivUp(window_width, blockSize.x), iDivUp(window_height, blockSize.y));
 
-	        uint *d_output/*, *d_cluster*/;
-	        cutilSafeCall(cudaMalloc((void**)&d_output, window_width*window_height*sizeof(uint)));
-	        cutilSafeCall(cudaMemset(d_output, 0, window_width*window_height*sizeof(uint)));
+    if (g_bQAReadback) {
+        g_CheckRender = new CheckBackBuffer(window_width, window_height, 4, false);
+        g_CheckRender->setPixelFormat(GL_RGBA);
+        g_CheckRender->setExecPath(argv[0]);
+        g_CheckRender->EnableQAReadback(true);
 
-	//		cutilSafeCall(cudaMalloc((void**)&d_cluster, window_width*window_height*sizeof(uint)));
-	//		cutilSafeCall(cudaMemset(d_cluster, 0, window_width*window_height*sizeof(uint)));
+//		 g_CheckCluster = new CheckBackBuffer(window_width, window_height, 4, false);
+//	     g_CheckCluster->setPixelFormat(GL_RGBA);
+//	     g_CheckCluster->setExecPath(argv[0]);
+//	     g_CheckCluster->EnableQAReadback(true);
 
-	        float modelView[16] = 
-	        {
-	            1.0f, 0.0f, 0.0f, 0.0f,
-	            0.0f, 1.0f, 0.0f, 0.0f,
-	            0.0f, 0.0f, 1.0f, 0.0f,
-	            0.0f, 0.0f, 4.0f, 1.0f
-	        };
+        uint *d_output/*, *d_cluster*/;
+        cutilSafeCall(cudaMalloc((void**)&d_output, window_width*window_height*sizeof(uint)));
+        cutilSafeCall(cudaMemset(d_output, 0, window_width*window_height*sizeof(uint)));
 
-	        invViewMatrix[0] = modelView[0]; invViewMatrix[1] = modelView[4]; invViewMatrix[2] = modelView[8]; invViewMatrix[3] = modelView[12];
-	        invViewMatrix[4] = modelView[1]; invViewMatrix[5] = modelView[5]; invViewMatrix[6] = modelView[9]; invViewMatrix[7] = modelView[13];
-	        invViewMatrix[8] = modelView[2]; invViewMatrix[9] = modelView[6]; invViewMatrix[10] = modelView[10]; invViewMatrix[11] = modelView[14];
+//		cutilSafeCall(cudaMalloc((void**)&d_cluster, window_width*window_height*sizeof(uint)));
+//		cutilSafeCall(cudaMemset(d_cluster, 0, window_width*window_height*sizeof(uint)));
 
-	        // call CUDA kernel, writing results to PBO
-		    copyInvViewMatrix(invViewMatrix, sizeof(float4)*3);
+        float modelView[16] = 
+        {
+            1.0f, 0.0f, 0.0f, 0.0f,
+            0.0f, 1.0f, 0.0f, 0.0f,
+            0.0f, 0.0f, 1.0f, 0.0f,
+            0.0f, 0.0f, 4.0f, 1.0f
+        };
 
-	        // Start timer 0 and process n loops on the GPU 
-	        int nIter = 10;
-	        for (int i = -1; i < nIter; i++)
-	        {
-	            if( i == 0 ) {
-	                cutilDeviceSynchronize();
-	                cutStartTimer(timer); 
-	            }
+        invViewMatrix[0] = modelView[0]; invViewMatrix[1] = modelView[4]; invViewMatrix[2] = modelView[8]; invViewMatrix[3] = modelView[12];
+        invViewMatrix[4] = modelView[1]; invViewMatrix[5] = modelView[5]; invViewMatrix[6] = modelView[9]; invViewMatrix[7] = modelView[13];
+        invViewMatrix[8] = modelView[2]; invViewMatrix[9] = modelView[6]; invViewMatrix[10] = modelView[10]; invViewMatrix[11] = modelView[14];
 
-	            render_kernel(gridSize, blockSize, d_output, /*d_cluster, */d_iRed, d_oRed, d_iGreen, d_oGreen, d_iBlue, d_oBlue,
-						d_iColors, data, /*cluster_data, */window_width, window_height, density, brightness, transfer[0], transfer[1], transfer[2],
-						transfer[3], transfer[4], transfer[5], h_volume, /*cluster, */volumeSize, d_volumeArray, /*d_volumeArray_cluster, */set);
-	        }
-	        cutilDeviceSynchronize();
-	        cutStopTimer(timer);
-	        // Get elapsed time and throughput, then log to sample and master logs
-	        double dAvgTime = cutGetTimerValue(timer)/(nIter * 1000.0);
-	        shrLogEx(LOGBOTH | MASTER, 0, "volumeRender, Throughput = %.4f MTexels/s, Time = %.5f s, Size = %u Texels, NumDevsUsed = %u, Workgroup = %u\n", 
-	               (1.0e-6 * window_width * window_height)/dAvgTime, dAvgTime, (window_width * window_height), 1, blockSize.x * blockSize.y); 
+        // call CUDA kernel, writing results to PBO
+	    copyInvViewMatrix(invViewMatrix, sizeof(float4)*3);
 
-	        cutilCheckMsg("Error: render_kernel() execution FAILED");
-	        cutilSafeCall( cutilDeviceSynchronize() );
+        // Start timer 0 and process n loops on the GPU 
+        int nIter = 10;
+        for (int i = -1; i < nIter; i++)
+        {
+            if( i == 0 ) {
+                cutilDeviceSynchronize();
+                cutStartTimer(timer); 
+            }
+			render_kernel(gridSize, blockSize, d_output, /*d_cluster, */d_iRed, d_oRed, d_iGreen, d_oGreen, d_iBlue, d_oBlue, 
+						d_iColors, data, /*cluster_data, */window_width, window_height, density, brightness, transfer[0], transfer[1], transfer[2], 
+						transfer[3], transfer[4], transfer[5], tfsize, h_volume, /*cluster, */volumeSize, d_volumeArray, /*d_volumeArray_cluster, */set);
+        }
+        cutilDeviceSynchronize();
+        cutStopTimer(timer);
+        // Get elapsed time and throughput, then log to sample and master logs
+        double dAvgTime = cutGetTimerValue(timer)/(nIter * 1000.0);
+        shrLogEx(LOGBOTH | MASTER, 0, "volumeRender, Throughput = %.4f MTexels/s, Time = %.5f s, Size = %u Texels, NumDevsUsed = %u, Workgroup = %u\n", 
+               (1.0e-6 * window_width * window_height)/dAvgTime, dAvgTime, (window_width * window_height), 1, blockSize.x * blockSize.y); 
 
-	        cutilSafeCall( cudaMemcpy(g_CheckRender->imageData(), d_output, window_width*window_height*4, cudaMemcpyDeviceToHost) );
-	        g_CheckRender->savePPM(sOriginal[g_Index], true, NULL);
+        cutilCheckMsg("Error: render_kernel() execution FAILED");
+        cutilSafeCall( cutilDeviceSynchronize() );
 
-	        bTestResult = g_CheckRender->PPMvsPPM(sOriginal[g_Index], sReference[g_Index], MAX_EPSILON_ERROR, THRESHOLD);
+        cutilSafeCall( cudaMemcpy(g_CheckRender->imageData(), d_output, window_width*window_height*4, cudaMemcpyDeviceToHost) );
+        g_CheckRender->savePPM(sOriginal[g_Index], true, NULL);
 
-	//		cutilSafeCall( cudaMemcpy(g_CheckCluster->imageData(), d_cluster, window_width*window_height*4, cudaMemcpyDeviceToHost) );
-	//		g_CheckRender->savePPM(sOriginal[g_Index], true, NULL);
+        bTestResult = g_CheckRender->PPMvsPPM(sOriginal[g_Index], sReference[g_Index], MAX_EPSILON_ERROR, THRESHOLD);
 
-	//		bTestResult = g_CheckCluster->PPMvsPPM(sOriginal[g_Index], sReference[g_Index], MAX_EPSILON_ERROR, THRESHOLD);
+//		cutilSafeCall( cudaMemcpy(g_CheckCluster->imageData(), d_cluster, window_width*window_height*4, cudaMemcpyDeviceToHost) );
+//		g_CheckRender->savePPM(sOriginal[g_Index], true, NULL);
 
-	        cudaFree(d_output);
-	    	freeCudaBuffers();
+//		bTestResult = g_CheckCluster->PPMvsPPM(sOriginal[g_Index], sReference[g_Index], MAX_EPSILON_ERROR, THRESHOLD);
 
-	        if (g_CheckRender) {
-	            delete g_CheckRender; g_CheckRender = NULL;
-	        }
-	//		if (g_CheckCluster) {
-	//			delete g_CheckCluster; g_CheckCluster = NULL;
-	//		}
+        cudaFree(d_output);
+    	freeCudaBuffers();
 
-	    } else {
-	        // This is the normal rendering path for VolumeRender
+        if (g_CheckRender) {
+            delete g_CheckRender; g_CheckRender = NULL;
+        }
+//		if (g_CheckCluster) {
+//			delete g_CheckCluster; g_CheckCluster = NULL;
+//		}
 
-			initPixelBuffer();
+    } else {
+        // This is the normal rendering path for VolumeRender
 
-	        if (g_bQAGLVerify) {
-	            g_CheckRender = new CheckBackBuffer(window_width, window_height, 4);
-	            g_CheckRender->setPixelFormat(GL_RGBA);
-	            g_CheckRender->setExecPath(argv[0]);
-	            g_CheckRender->EnableQAReadback(true);
+		initPixelBuffer();
 
-	//			g_CheckCluster = new CheckBackBuffer(window_width, window_height, 4);
-	//			g_CheckCluster->setPixelFormat(GL_RGBA);
-	//			g_CheckCluster->setExecPath(argv[0]);
-	//			g_CheckCluster->EnableQAReadback(true);
-	        }
+        if (g_bQAGLVerify) {
+            g_CheckRender = new CheckBackBuffer(window_width, window_height, 4);
+            g_CheckRender->setPixelFormat(GL_RGBA);
+            g_CheckRender->setExecPath(argv[0]);
+            g_CheckRender->EnableQAReadback(true);
 
-	        atexit(cleanup);
+//			g_CheckCluster = new CheckBackBuffer(window_width, window_height, 4);
+//			g_CheckCluster->setPixelFormat(GL_RGBA);
+//			g_CheckCluster->setExecPath(argv[0]);
+//			g_CheckCluster->EnableQAReadback(true);
+        }
+
+        atexit(cleanup);
 printf("before glutMainLoop in callbacks::InitVolRender\n"); fflush(stdout);
-	        glutMainLoop();
-	    }
+        glutMainLoop();
+    }
 
-	    cutilDeviceReset();
-	    shrQAFinishExit(argc, (const char **)argv, (bTestResult ? QA_PASSED : QA_FAILED) );
-		printf("end InitVolRender\n"); fflush(stdout);
+    cutilDeviceReset();
+    shrQAFinishExit(argc, (const char **)argv, (bTestResult ? QA_PASSED : QA_FAILED) );
+	printf("end InitVolRender\n"); fflush(stdout);
 }

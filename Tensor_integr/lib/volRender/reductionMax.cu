@@ -5,7 +5,7 @@
 #include "reductionMax.hh"
 #include "sharedMem.cuh"
 
-// Instanciate kernels to prevent linker errors
+// Instantiate kernels to prevent linker errors
 template int    reduce_max<int   >(int    *d_odata, int    *d_idata, int size);
 template float  reduce_max<float >(float  *d_odata, float  *d_idata, int size);
 template double reduce_max<double>(double *d_odata, double *d_idata, int size);

@@ -25,7 +25,7 @@ float Parameters::RedPixelSize = 0;
 Vector* Parameters::RedCentralSpotOnScreen = new Vector(0,0,0);
 iPoint* Parameters::RedMovieFileSize = new iPoint(0,0,0);
 //TransferFunction* Parameters::opTranFunc = NULL;
-//ColorTransferFunction* Parameters::colTranFunc = NULL;
+ColorTransferFunction* Parameters::colTranFunc = NULL;
 fPoint* Parameters::SeedPointLoc = new fPoint(0,0,0);
 int Parameters::FastPassSamplingInterval = MTW_Default_FastPassSamplingInterval;
 
@@ -64,6 +64,10 @@ void Parameters::LoadParameters(std::string szpFile)
         // we couldn't find the file -- ask the operator for a file path using the common controls file dialog
 		FATAL_ERROR("Unable to continue without a parameter file.");
     }
+
+	//opTranFunc = new TransferFunction();
+	colTranFunc = new ColorTransferFunction();
+
     // read and process each line
 #define IsKeyWord(x) (strcmp(szpKeyWord,x) == 0)
     for (int iLine=2; iLine<1000; iLine++)
@@ -139,12 +143,10 @@ void Parameters::LoadParameters(std::string szpFile)
             FastPassSamplingInterval = atoi(szpParm1);
         }
 		else if(IsKeyWord("IntensityTranFunc")){
-			//opTranFunc = new TransferFunction();
 			//opTranFunc->addPoint(atof(szpParm1), atof(szpParm2)) ;
 		}
 		else if(IsKeyWord("ColorTranFunc")){
-			//colTranFunc = new ColorTransferFunction();
-			//colTranFunc->addPoint(atof(szpParm1), atof(szpParm2), atof(szpParm3), atof(szpParm4)) ;
+			colTranFunc->addPoint(atof(szpParm1), atof(szpParm2), atof(szpParm3), atof(szpParm4)) ;
 		}
         else if (IsKeyWord("SeedPoint"))
         {   

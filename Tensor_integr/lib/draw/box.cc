@@ -7,7 +7,6 @@ extern int cols;
 
 void DrawAxisAndBox(double boxLenX, double boxLenY, double boxLenZ){
 
-printf("start DrawAxisAndBox\n"); fflush(stdout);
    //// DRAWING THE BOUNDING BOX	
    glColor3f(0.2, 0.2, 0.2) ;
    glBegin(GL_LINE_LOOP) ;
@@ -34,5 +33,4 @@ printf("start DrawAxisAndBox\n"); fflush(stdout);
 	glVertex4f(-boxLenX*cols/2.0, -boxLenY*rows/2.0, boxLenZ*slices/2.0, 1) ;		
 	glVertex4f(-boxLenX*cols/2.0, -boxLenY*rows/2.0, -boxLenZ*slices/2.0, 1) ;		
    glEnd() ;
-printf("end DrawAxisAndBox\n"); fflush(stdout);
 }

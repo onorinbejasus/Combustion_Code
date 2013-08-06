@@ -10,7 +10,7 @@
 #include "../vector/point.hh"
 #include "../vector/vector.hh"
 //#include "../transform/TransferFunction.hh"
-//#include "../volume/ColorTransferFunction.hh"
+#include "../transform/ColorTransferFunction.hh"
 #include "../std/FatalError.hh"
 #include <iostream>
 #include <cstdio>
@@ -41,7 +41,7 @@ public:
                                                 // NOTE: additional codes have been created (05-24-2007)
 
 //	static TransferFunction* opTranFunc;				// Opacity transfer function of the projector
-//	static ColorTransferFunction* colTranFunc ;			// color transfer function for the projector
+	static ColorTransferFunction* colTranFunc ;			// color transfer function for the projector
 
 	static fPoint*  SeedPointLoc;
 
