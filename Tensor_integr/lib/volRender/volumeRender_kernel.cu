@@ -149,34 +149,41 @@ float4 color_interpolate_large(float sample, float4 one, float4 two, float4 thre
 
 __device__ 
 float4 color_interpolate_1(float sample, float4 one, float4 two, float4 three,
-				float4 four, float4 five, float4 six){
+				float4 four, float4 five, float4 six, uint tfsize){
 	
 	float4 retcolor = make_float4(0);
-	float percent = 0.0f; 
+	float percent = 0.0f;
+
+	float one_lim = one.x; one = make_float4(one.y, one.z, one.w, 0.1f);
+	float two_lim = two.x; two = make_float4(two.y, two.z, two.w, 0.1f);
+	float three_lim = three.x; three = make_float4(three.y, three.z, three.w, 0.1f);
+	float four_lim = four.x; four = make_float4(four.y, four.z, four.w, 0.1f);
+	float five_lim = five.x; five = make_float4(five.y, five.z, five.w, 0.1f);
+	float six_lim = six.x; six = make_float4(six.y, six.z, six.w, 0.1f);
 		
-	if(sample <= 25500.0f){
+	if(sample <= two_lim){
 	
-		percent = (sample - 0.0f) / (25500.0f - 0.0f);
+		percent = (sample - one_lim) / (two_lim - one_lim);
 		retcolor = one + percent * (two - one);
 		
-	}else if(sample > 25500.0f && sample <= 26500.0f){
+	}else if(sample > two_lim && sample <= three_lim){
 		
-		percent = (sample - 25500.0f)  / (26500.0f - 25500.0f);
+		percent = (sample - two_lim)  / (three_lim - two_lim);
 		retcolor = two + percent * (three - two);
 		
-	}else if(sample > 26500.0f && sample <= 27500.0f){
+	}else if(sample > three_lim && sample <= four_lim){
 		
-		percent = (sample - 26500.0f) / (27500.0f - 26500.0f);
+		percent = (sample - three_lim) / (four_lim - three_lim);
 		retcolor = three + percent * (four - three);
 		
-	}else if(sample > 27500.0f && sample <= 28500.0f){
+	}else if(sample > four_lim && sample <= five_lim){
 		
-		percent = (sample - 27500.0f) / (28500.0f - 27500.0f);
+		percent = (sample - four_lim) / (five_lim - four_lim);
 		retcolor = four + percent * (five - four);
 		
 	}else{
 		
-		percent = (sample - 28500.0f) / (65535.0f - 28500.0f);
+		percent = (sample - five_lim) / (six_lim - five_lim);
 		retcolor = five + percent * (six - five);
 	}
 	
@@ -235,38 +242,54 @@ float4 color_interpolate(float sample, float4 one, float4 two, float4 three,
 	//float4 retcolor = low_val - percent * (high_val - low_val);
 
 	float4 retcolor = make_float4(0);
-	float percent = 0.0f; 
+	float percent = 0.0f;
 
-	float one_lim = one.x; one = make_float4(one.y, one.z, one.w, 0.1f);
+	/*float one_lim = one.x; one = make_float4(one.y, one.z, one.w, 0.1f);
 	float two_lim = two.x; two = make_float4(two.y, two.z, two.w, 0.1f);
 	float three_lim = three.x; three = make_float4(three.y, three.z, three.w, 0.1f);
 	float four_lim = four.x; four = make_float4(four.y, four.z, four.w, 0.1f);
 	float five_lim = five.x; five = make_float4(five.y, five.z, five.w, 0.1f);
-	float six_lim = six.x; six = make_float4(six.y, six.z, six.w, 0.1f);
+	float six_lim = six.x; six = make_float4(six.y, six.z, six.w, 0.1f);*/
 
+	// parameters for 2
+	/*float one_lim = 0.0f; one = make_float4(0.0f, 0.0f, 0.0f, 0.0f);
+	float two_lim = 25500.0f; two = make_float4(0.0f, 0.3f, 0.3f, 0.0f);
+	float three_lim = 26500.0f; three = make_float4(0.5f, 0.5f, 1.0f, 0.1f);
+	float four_lim = 27500.0f; four = make_float4(1.0f, 1.0f, 1.0f, 0.4f);
+	float five_lim = 28500.0f; five = make_float4(1.0f, 0.2f, 0.2f, 0.94f);
+	float six_lim = 65535.0f; six = make_float4(1.0f, 0.0f, 0.0f, 1.0f);*/
+
+	// parameters for 3_1
+	float one_lim = 0.0f; one = make_float4(0.0f, 0.0f, 0.0f, 0.0f);
+	float two_lim = 45000.0f; two = make_float4(0.3f, 0.3f, 0.4f, 1.0f);
+	float three_lim = 46000.0f; three = make_float4(0.6f, 0.6f, 1.0f, 1.0f);
+	float four_lim = 47000.0f; four = make_float4(1.0f, 1.0f, 1.0f, 0.05f);
+	float five_lim = 48000.0f; five = make_float4(1.0f, 0.2f, 0.2f, 0.9f);
+	float six_lim = 65535.0f; six = make_float4(1.0f, 0.0f, 0.0f, 0.1f);
+	
 	if(sample <= two_lim){
 	
-		percent = (two_lim - sample) / (two_lim - one_lim);
+		percent = (two_lim - sample) / two_lim;//(two_lim - one_lim);
 		retcolor = (percent)*one + (1.0f-percent) * two;
 		
 	}else if(sample > two_lim && sample <= three_lim){
 		
-		percent = (three_lim - sample)  / (three_lim - two_lim);
+		percent = (three_lim - sample)  / three_lim;//(three_lim - two_lim);
 		retcolor = (percent)*two + (1.0f-percent) * three;
 		
 	}else if(sample > three_lim && sample <= four_lim){
 		
-		percent = (four_lim - sample) / (four_lim - three_lim);
+		percent = (four_lim - sample) / four_lim;//(four_lim - three_lim);
 		retcolor = (percent)*three + (1.0f-percent) * four;
 		
 	}else if(sample > four_lim && sample <= five_lim){
 		
-		percent = (five_lim - sample) / (five_lim - four_lim);
+		percent = (five_lim - sample) / five_lim;//(five_lim - four_lim);
 		retcolor = (percent)*four + (1.0f-percent) * five;
 		
 	}else{
 		
-		percent = (six_lim - sample) / (six_lim - five_lim);
+		percent = (six_lim - sample) / six_lim;//(six_lim - five_lim);
 		retcolor = (percent)*five + (1.0f-percent) * six;
 	}	
 	return retcolor;	
@@ -296,7 +319,7 @@ d_render(float4 *d_iColors, ushort *data,
     uint x = blockIdx.x*blockDim.x + threadIdx.x;
     uint y = blockIdx.y*blockDim.y + threadIdx.y;
     if ((x >= imageW) || (y >= imageH)) return;
-
+	
     float u = (x / (float) imageW)*2.0f-1.0f;
     float v = (y / (float) imageH)*2.0f-1.0f;
 
@@ -327,11 +350,12 @@ d_render(float4 *d_iColors, ushort *data,
 			sample = tex3D(tex, pos.x*0.5f+0.5f, pos.y*0.5f+0.5f, pos.z*0.5f+0.5f);
 		//else
 		//	sample = tex3D(tex_cluster, pos.x*0.5f+0.5f, pos.y*0.5f+0.5f, pos.z*0.5f+0.5f);
-				float4 col = make_float4(0.0f);
-				float4 col_ = make_float4(0.0f);
+			float4 col = make_float4(0.0f);
+			float4 col_ = make_float4(0.0f);
 
         // lookup in transfer function texture
 		//if(type == 0)
+			//printf("values: %f %f %f %f\n", one.x, one.y. one.z, one.w);
 			col = color_interpolate(sample,one,two,three,four,five,six, tfsize);
 		//else
 		//	col = color_interpolate_cluster(sample);

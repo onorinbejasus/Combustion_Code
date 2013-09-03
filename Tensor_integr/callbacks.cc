@@ -62,7 +62,7 @@ const char *sSDKsample = "Tensor Volume";
 //char *volumeFilename = "pressure.raw";
 //char *cluster_file = "../data/ds2_clust3_ushort.raw";
 
-cudaExtent volumeSize = make_cudaExtent(194,193,194);
+cudaExtent volumeSize = make_cudaExtent(201,161,161);
 //typedef unsigned short VolumeType;
 //typedef float VolumeType;
 
@@ -1020,9 +1020,9 @@ void render()
 //	cutilSafeCall(cudaMemset(d_cluster, 0, window_width*window_height*4));
 
     // call CUDA kernel, writing results to PBO
-	printf("tf before render_kernel call:\n");
+	printf("transfer function before render_kernel call:\n");
 	for(int i = 0; i < tfsize; i++)
-		printf("%f, %f, %f, %f\n", tf[i][0], tf[i][1], tf[i][2], tf[i][3]);
+		printf("%f, %f, %f, %f\n", transfer[i].x, transfer[i].y, transfer[i].z, transfer[i].w);
     render_kernel(gridSize, blockSize, d_output, /*d_cluster, */d_iRed, d_oRed, d_iGreen, d_oGreen, d_iBlue, d_oBlue,
 			d_iColors, data, /*cluster_data, */window_width, window_height, density, brightness, transfer[0], transfer[1], transfer[2],
 			transfer[3], transfer[4], transfer[5], tfsize, h_volume, /*cluster, */volumeSize, d_volumeArray, /*d_volumeArray_cluster, */set);

@@ -60,11 +60,11 @@ void Streamline::Configure(fPoint SeedPoint, int n){
 
 void Streamline::DrawSeedPoint(){
 	glPushMatrix() ;
-	glTranslatef(this->fSeedPosX, this->fSeedPosY, this->fSeedPosZ) ;   
+	glTranslatef(this->fSeedPosX, this->fSeedPosY, this->fSeedPosZ) ;
 	if( this->bSeedpointSelected )
 		glColor3f(0.5, 0.5, 0.0) ;
 	else
-		glColor3f(0.0, 0.5, 0.5) ;
+		glColor3f(1.0, 1.0, 1.0) ;
 	glutSolidSphere(3, 10, 10) ;
 	glPopMatrix() ;
 } 
@@ -305,8 +305,8 @@ void Streamline::RenderStreamlines(GLfloat *eigenfloats){
 	int iDisplayListIndex ;
 	
 	if( this->bVisible ){								// if they are visible then draw. Otherwise no need.
-		this->DrawSeedPoint() ; 
-		int temp = 4;
+		this->DrawSeedPoint() ;
+/*		int temp = 4;
 		for(int i = 0 ; i < this->iNumberOfStreamlines ; i++){
 			if(i % 3 == 0)
 				temp = 4;//i % 4;
@@ -314,7 +314,7 @@ void Streamline::RenderStreamlines(GLfloat *eigenfloats){
 				temp = 4;
 			draw_streamlines(vbo[i], this->shader, sizes[i] * 4.0 * sizeof(GLfloat), streamlineColor[temp]);
 		}
-	}
+*/	}
 } 
 
 void Streamline::SelectModeSeedPointDraw(){

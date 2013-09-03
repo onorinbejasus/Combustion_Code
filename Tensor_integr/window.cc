@@ -209,7 +209,7 @@ printf("start initGL\n"); fflush(stdout);
 			
 	glMatrixMode (GL_MODELVIEW);
 	glLoadIdentity() ;  // init modelview to identity
-	
+
 	
 printf("end initGL\n"); fflush(stdout);
 	return true;

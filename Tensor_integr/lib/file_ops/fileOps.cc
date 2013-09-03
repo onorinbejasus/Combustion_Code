@@ -388,8 +388,8 @@ void *loadRawFile(const char *filename, size_t size)
     if (!fp) {
         fprintf(stderr, "Error opening file '%s'\n", filename);
         return 0;
-    	}
-
+	  }
+	
     void *data = malloc(size);
 	size_t read = fread(data, 1, size, fp);
     fclose(fp);
